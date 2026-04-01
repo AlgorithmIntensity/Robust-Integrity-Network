@@ -1,1 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>RING2 Telemetry API v1</title>
+</head>
+<body>
+    <h1>RING2 Telemetry API v1</h1>
+    <p>Статус: активен</p>
+    <p>Всего записей: <span id="count">0</span></p>
+    <hr>
+    <h2>Последние данные</h2>
+    <pre id="data"></pre>
+    <hr>
 
+    <script>
+        function loadData() {
+            let stored = localStorage.getItem('telemetry');
+            let lines = stored ? stored.split('\n').filter(l => l.trim()) : [];
+            document.getElementById('count').innerText = lines.length;
+            
+            if (stored) {
+                document.getElementById('data').innerText = stored;
+            } else {
+                document.getElementById('data').innerText = 'Нет данных';
+            }
+        }
+
+        function addData(entry) {
+            let stored = localStorage.getItem('telemetry') || '';
+            let timestamp = new Date().toISOString();
+            let newData = `[${timestamp}] ${entry}\n${stored}`;
+            localStorage.setItem('telemetry', newData);
+            loadData();
+        }
+
+        function addManualData() {
+            let input = document.getElementById('manualInput');
+            let value = input.value.trim();
+            if (value) {
+                addData(value);
+                input.value = '';
+            } else {
+                alert('Введите данные');
+            }
+        }
+
+        function clearData() {
+            if (confirm('Очистить все данные?')) {
+                localStorage.removeItem('telemetry');
+                loadData();
+            }
+        }
+
+        function parseQueryString() {
+            let urlParams = new URLSearchParams(window.location.search);
+            let data = urlParams.get('data');
+            if (data) {
+                addData(decodeURIComponent(data));
+            }
+        }
+
+        window.addEventListener('load', function() {
+            loadData();
+            parseQueryString();
+        });
+    </script>
+</body>
+</html>
